@@ -1,24 +1,19 @@
-const videoElement = document.querySelector('video');
-const stopBtn = document.getElementById('stopBtn');
-const startBtn = document.getElementById('startBtn');
+const videoElement = document.querySelector("video");
+const stopBtn = document.getElementById("stopBtn");
+const startBtn = document.getElementById("startBtn");
 
-const videoSelectBtn = document.getElementById('videoSelectBtn')
-videoSelectBtn.onclick = getVideoSources()
+const { ipcRenderer, Menu } = require("electron");
 
-const {desktopCapturer, remote} = require('electron')
-const { Menu } = remote;
+const videoSelectBtn = document.getElementById("videoSelectBtn");
 
-async function getVideoSources() {
-  const inputSources = await desktopCapturer.getSources({
-    types: ['window', 'screen']
-  })
-  const videoOptionsMenu = Menu.buildFromTemplate(
-    inputSources.map(source => {
-      return {
-        label: source.name,
-        click: () => selectSource()
-      }
-    })
-  )
-  videoOptionsMenu.popup()
-}
+videoSelectBtn.addEventListener("click", () => {
+  ipcRenderer.send("getSources");
+});
+
+ipcRenderer.on("sources", (event, options) => {
+  options.popup();
+});
+
+ipcRenderer.on("error", (event, error) => {
+  console.error("Error getting sources:", error);
+});
